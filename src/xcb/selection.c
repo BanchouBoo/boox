@@ -11,9 +11,6 @@ rect_t selection;
 
 void selection_window_initialize(void)
 {
-	// values[0] = COLOR;
-	// values[1] = 1;
-	// values[2] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
 	int values[] = { COLOR, 1,  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
 	int mask = XCB_CW_BACK_PIXEL | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK;
 
@@ -37,15 +34,6 @@ void selection_window_initialize(void)
 
 void set_rects_from_selection(xcb_rectangle_t *rects, rect_t dimensions)
 {
-	// if (dimensions.w < 0) {
-	// 	dimensions.x = dimensions.x + dimensions.w;
-	// 	dimensions.w = abs(dimensions.w);
-	// }
-
-	// if (dimensions.h < 0) {
-	// 	dimensions.y = dimensions.y + dimensions.h;
-	// 	dimensions.h = abs(dimensions.h);
-	// }
 	dimensions = fix_rect(dimensions);
 
 	rects[0].x = dimensions.x - BORDER;

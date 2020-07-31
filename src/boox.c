@@ -45,8 +45,8 @@ static void handle_events(void) {
 				hovered_win = pointer->child ? pointer->child : xcb_screen->root;
 				geom = xcb_get_geometry_reply(xcb_connection, xcb_get_geometry(xcb_connection, hovered_win), NULL);
 				update_selection_window((rect_t) {
-					.x = geom->x,
-					.y = geom->y,
+					.x = geom->x + geom->border_width,
+					.y = geom->y + geom->border_width,
 					.w = geom->width,
 					.h = geom->height
 				});
@@ -64,8 +64,8 @@ static void handle_events(void) {
 					xcb_get_geometry(xcb_connection, pointer->child ? pointer->child : xcb_screen->root), NULL);
 
 				selection = (rect_t) {
-					.x = geom->x,
-					.y = geom->y,
+					.x = geom->x + geom->border_width,
+					.y = geom->y + geom->border_width,
 					.w = geom->width,
 					.h = geom->height
 				};
