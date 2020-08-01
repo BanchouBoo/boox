@@ -18,6 +18,11 @@ void selection_window_initialize(void)
 	xcb_create_window(xcb_connection, XCB_COPY_FROM_PARENT, selection_window, xcb_screen->root, 0, 0,
 		xcb_screen->width_in_pixels, xcb_screen->height_in_pixels, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
 		XCB_COPY_FROM_PARENT, mask, values);
+	xcb_change_property(xcb_connection, XCB_PROP_MODE_REPLACE, selection_window,
+		XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, 4, "boox");
+	xcb_change_property(xcb_connection, XCB_PROP_MODE_REPLACE, selection_window,
+		XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, 10, "boox\0boox");
+
 
 	xcb_rectangle_t rects[4];
 	set_rects_from_selection(rects, selection);
