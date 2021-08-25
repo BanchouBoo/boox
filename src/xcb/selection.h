@@ -10,6 +10,11 @@ typedef struct {
 	int h;
 } rect_t;
 
+typedef struct {
+	int x;
+	int y;
+} point_t;
+
 extern xcb_window_t selection_window;
 extern rect_t selection;
 

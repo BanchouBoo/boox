@@ -28,14 +28,16 @@ int xcb_initialize(void)
 		XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
 		xcb_screen->root, cursor, XCB_CURRENT_TIME);
 
+	// grab alt key (64)
+	xcb_grab_key(xcb_connection, 0, xcb_screen->root, XCB_MOD_MASK_ANY, 64, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+
 	xcb_free_cursor(xcb_connection, cursor);
 
-	xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(xcb_connection,
+	xcb_grab_pointer_reply_t *pointer_reply = xcb_grab_pointer_reply(xcb_connection,
 		grab_pointer_cookie, NULL);
 
-	if (reply && reply->status == XCB_GRAB_STATUS_ALREADY_GRABBED)
+	if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_ALREADY_GRABBED)
 		return 0;
-
 
 	values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
 	mask = XCB_CW_EVENT_MASK;
