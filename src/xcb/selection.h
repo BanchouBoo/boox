@@ -4,15 +4,15 @@
 #include <xcb/xcb.h>
 
 typedef struct {
-	int x;
-	int y;
-	int w;
-	int h;
+    int x;
+    int y;
+    int w;
+    int h;
 } rect_t;
 
 typedef struct {
-	int x;
-	int y;
+    int x;
+    int y;
 } point_t;
 
 extern xcb_window_t selection_window;
