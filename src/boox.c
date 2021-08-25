@@ -1,6 +1,7 @@
 #include <xcb/xcb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "xcb/connection.h"
@@ -139,6 +140,44 @@ static void handle_events(void) {
 }
 
 int main(int argc, char **argv) {
+	char *format = getenv("BOOX_FORMAT");
+	if (!format) {
+		format = DEFAULT_OUTPUT_FORMAT;
+	}
+
+	char *border_size_env = getenv("BOOX_BORDER_SIZE");
+	if (border_size_env) {
+		border_size = strtol(border_size_env, NULL, 10);
+	} else {
+		border_size = DEFAULT_BORDER_SIZE;
+	}
+
+	char *border_color_env = getenv("BOOX_BORDER_COLOR");
+	if (border_color_env) {
+		border_color = strtol(border_color_env, NULL, 16);
+	} else {
+		border_color = DEFAULT_BORDER_COLOR;
+	}
+
+	char opt = 0;
+	while ((opt = getopt(argc, argv, "hf:b:c:")) != -1) {
+		switch (opt) {
+			case 'h': {
+				//
+			} break;
+			case 'f': {
+				format = optarg;
+			} break;
+			case 'b': {
+				border_size = strtol(optarg, NULL, 10);
+			} break;
+			case 'c': {
+				border_color = strtol(optarg, NULL, 16);
+			} break;
+			case '?': return EXIT_FAILURE;
+		}
+	}
+
 	if (!xcb_initialize())
 		return EXIT_FAILURE;
 
@@ -150,11 +189,7 @@ int main(int argc, char **argv) {
 
 	xcb_finalize();
 
-	if (argc <= 1) {
-		formatted_print(DEFAULT_OUTPUT_FORMAT);
-	} else {
-		formatted_print(argv[1]);
-	}
+	formatted_print(format);
 
 	return EXIT_SUCCESS;
 }

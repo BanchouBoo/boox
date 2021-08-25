@@ -9,10 +9,12 @@
 
 xcb_window_t selection_window;
 rect_t selection;
+int border_size;
+int border_color;
 
 void selection_window_initialize(void)
 {
-	int values[] = { BORDER_COLOR, 1,  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
+	int values[] = { border_color, 1,  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
 	int mask = XCB_CW_BACK_PIXEL | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK;
 
 	selection_window = xcb_generate_id(xcb_connection);
@@ -42,25 +44,25 @@ void set_rects_from_selection(xcb_rectangle_t *rects, rect_t dimensions)
 {
 	dimensions = fix_rect(dimensions);
 
-	rects[0].x = dimensions.x - BORDER_SIZE;
-	rects[0].y = dimensions.y - BORDER_SIZE;
-	rects[0].width = BORDER_SIZE;
-	rects[0].height = dimensions.h + BORDER_SIZE * 2;
+	rects[0].x = dimensions.x - border_size;
+	rects[0].y = dimensions.y - border_size;
+	rects[0].width = border_size;
+	rects[0].height = dimensions.h + border_size * 2;
 
 	rects[1].x = dimensions.x;
-	rects[1].y = dimensions.y - BORDER_SIZE;
-	rects[1].width = dimensions.w + BORDER_SIZE;
-	rects[1].height = BORDER_SIZE;
+	rects[1].y = dimensions.y - border_size;
+	rects[1].width = dimensions.w + border_size;
+	rects[1].height = border_size;
 
 	rects[2].x = dimensions.x + dimensions.w;
-	rects[2].y = dimensions.y - BORDER_SIZE;
-	rects[2].width = BORDER_SIZE;
-	rects[2].height = dimensions.h + BORDER_SIZE * 2;
+	rects[2].y = dimensions.y - border_size;
+	rects[2].width = border_size;
+	rects[2].height = dimensions.h + border_size * 2;
 
 	rects[3].x = dimensions.x;
 	rects[3].y = dimensions.y + dimensions.h;
-	rects[3].width = dimensions.w + BORDER_SIZE;
-	rects[3].height = BORDER_SIZE;
+	rects[3].width = dimensions.w + border_size;
+	rects[3].height = border_size;
 }
 
 void update_selection_window(rect_t dimensions)
