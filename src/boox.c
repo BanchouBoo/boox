@@ -59,7 +59,10 @@ static void handle_events(void) {
             if (e->detail == 64) {
                 alt_state = ALT_STATE_NONE;
                 if (selecting) {
-                    xcb_warp_pointer(xcb_connection, XCB_NONE, xcb_screen->root, 0, 0, 0, 0, selection.x + selection.w, selection.y + selection.h);
+                    // set last_mouse_pos to prevent jumping after the warp while selecting with control
+                    last_mouse_pos.x = selection.x + selection.w;
+                    last_mouse_pos.y = selection.y + selection.h;
+                    xcb_warp_pointer(xcb_connection, XCB_NONE, xcb_screen->root, 0, 0, 0, 0, last_mouse_pos.x, last_mouse_pos.y);
                     flush();
                 }
             }
