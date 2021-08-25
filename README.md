@@ -19,4 +19,4 @@ Border color can be configured with the `-c` flag or the `BOOX_BORDER_COLOR` env
 
 All options can also have their default values changed in `src/config.h`
 
-(Outdated) Example usage video: https://imgur.com/a/x5FcLbQ
+Example usage video: https://streamable.com/53n3fo
