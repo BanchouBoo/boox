@@ -139,6 +139,18 @@ static void handle_events(void) {
     free(ev);
 }
 
+void print_help(int exit_code) {
+    fprintf(stderr, "boox: [-f FORMAT] [-b SIZE] [-c COLOR]\n");
+
+    fprintf(stderr, "  -h          print this help and exit\n\n");
+
+    fprintf(stderr, "  -f FORMAT   set output format           default: %s\n", DEFAULT_OUTPUT_FORMAT);
+    fprintf(stderr, "  -b SIZE     set selection border size   default: %d\n", DEFAULT_BORDER_SIZE);
+    fprintf(stderr, "  -c COLOR    set selection border color  default: %x\n", DEFAULT_BORDER_COLOR);
+
+    exit(exit_code);
+}
+
 int main(int argc, char **argv) {
     char *format = getenv("BOOX_FORMAT");
     if (!format) {
@@ -163,7 +175,7 @@ int main(int argc, char **argv) {
     while ((opt = getopt(argc, argv, "hf:b:c:")) != -1) {
         switch (opt) {
             case 'h': {
-                //
+                print_help(EXIT_SUCCESS);
             } break;
             case 'f': {
                 format = optarg;
@@ -174,7 +186,7 @@ int main(int argc, char **argv) {
             case 'c': {
                 border_color = strtol(optarg, NULL, 16);
             } break;
-            case '?': return EXIT_FAILURE;
+            case '?': print_help(EXIT_FAILURE);
         }
     }
 

@@ -1,7 +1,6 @@
 #include <xcb/xcb.h>
 #include <xcb/shape.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "connection.h"
 #include "selection.h"
