@@ -6,8 +6,10 @@
 #include "selection.h"
 #include "../config.h"
 
+mode_t selection_mode = MODE_SELECT;
 xcb_window_t selection_window;
 rect_t selection;
+point_selection_t point_selection;
 int border_size;
 int border_color;
 

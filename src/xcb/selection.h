@@ -15,8 +15,20 @@ typedef struct {
     int y;
 } point_t;
 
+typedef struct {
+    point_t point;
+    xcb_window_t window;
+} point_selection_t;
+
+typedef enum {
+    MODE_SELECT,
+    MODE_POINT
+} selection_mode_t;
+
+extern selection_mode_t selection_mode;
 extern xcb_window_t selection_window;
 extern rect_t selection;
+extern point_selection_t point_selection;
 extern int border_size;
 extern int border_color;
 

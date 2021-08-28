@@ -8,14 +8,14 @@
 #include "xcb/selection.h"
 #include "parsing/parsing.h"
 
-int running = 1;
-
 typedef enum {
     ALT_STATE_NONE,
     ALT_STATE_WAITING,
     ALT_STATE_HORIZONTAL,
     ALT_STATE_VERTICAL
 } alt_state_t;
+
+int running = 1;
 
 static void handle_events(void) {
     xcb_generic_event_t *ev;
@@ -35,11 +35,19 @@ static void handle_events(void) {
         case XCB_BUTTON_PRESS: {
             xcb_button_press_event_t *e = ( xcb_button_press_event_t *)ev;
             if (e->detail == 1) {
-                selection.x = e->root_x;
-                selection.y = e->root_y;
-                last_mouse_pos.x = e->root_x;
-                last_mouse_pos.y = e->root_y;
-                selecting = 1;
+                if (selection_mode == MODE_SELECT) {
+                    selection.x = e->root_x;
+                    selection.y = e->root_y;
+                    last_mouse_pos.x = e->root_x;
+                    last_mouse_pos.y = e->root_y;
+                    selecting = 1;
+                } else {
+                    point_selection.point.x = e->root_x;
+                    point_selection.point.y = e->root_y;
+                    point_selection.window = e->child ? e->child : xcb_screen->root;
+                    running = 0;
+                    xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
+                }
             } else if (e->detail == 3) {
                 exit(EXIT_FAILURE);
             }
@@ -147,38 +155,42 @@ void print_help(int exit_code) {
 
     fprintf(stderr, "  -h          print this help and exit\n\n");
 
-    fprintf(stderr, "  -f FORMAT   set output format           default: %s\n", DEFAULT_OUTPUT_FORMAT);
-    fprintf(stderr, "  -b SIZE     set selection border size   default: %d\n", DEFAULT_BORDER_SIZE);
-    fprintf(stderr, "  -c COLOR    set selection border color  default: %x\n", DEFAULT_BORDER_COLOR);
+    fprintf(stderr, "  -p          select a point instead of region\n");
+    fprintf(stderr, "  -f FORMAT   set output format                 default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
+    fprintf(stderr, "                                                default point format: '%s'\n", DEFAULT_POINT_OUTPUT_FORMAT);
+    fprintf(stderr, "  -b SIZE     set selection border size         default: %d\n", DEFAULT_BORDER_SIZE);
+    fprintf(stderr, "  -c COLOR    set selection border color        default: %x\n", DEFAULT_BORDER_COLOR);
 
     exit(exit_code);
 }
 
 int main(int argc, char **argv) {
-    char *format = getenv("BOOX_FORMAT");
-    if (!format) {
-        format = DEFAULT_OUTPUT_FORMAT;
-    }
+    char *format;
+    char *selection_format_env = getenv("BOOX_SELECTION_FORMAT");
+    char *point_format_env = getenv("BOOX_POINT_FORMAT");
 
     char *border_size_env = getenv("BOOX_BORDER_SIZE");
-    if (border_size_env) {
+    if (border_size_env)
         border_size = strtol(border_size_env, NULL, 10);
-    } else {
+    else
         border_size = DEFAULT_BORDER_SIZE;
-    }
 
     char *border_color_env = getenv("BOOX_BORDER_COLOR");
     if (border_color_env) {
         border_color = strtol(border_color_env, NULL, 16);
-    } else {
+    } else
         border_color = DEFAULT_BORDER_COLOR;
-    }
+
+
 
     char opt = 0;
-    while ((opt = getopt(argc, argv, "hf:b:c:")) != -1) {
+    while ((opt = getopt(argc, argv, "hpf:b:c:")) != -1) {
         switch (opt) {
             case 'h': {
                 print_help(EXIT_SUCCESS);
+            } break;
+            case 'p': {
+                selection_mode = MODE_POINT;
             } break;
             case 'f': {
                 format = optarg;
@@ -191,6 +203,13 @@ int main(int argc, char **argv) {
             } break;
             case '?': print_help(EXIT_FAILURE);
         }
+    }
+
+    if (!format) {
+        if (selection_mode == MODE_SELECT)
+            format = selection_format_env ? selection_format_env : DEFAULT_SELECTION_OUTPUT_FORMAT;
+        else if (selection_mode == MODE_POINT)
+            format = point_format_env ? point_format_env : DEFAULT_POINT_OUTPUT_FORMAT;
     }
 
     if (!xcb_initialize())
