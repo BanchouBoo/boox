@@ -24,3 +24,9 @@ Border color can be configured with the `-c` flag or the `BOOX_BORDER_COLOR` env
 All options can also have their default values changed in `src/config.h`
 
 Example usage video: https://streamable.com/53n3fo
+
+## todo (maybe)
+- Restructure the code to better support adding different modes of selection
+- Allow printing the window ID from regular selection, either the window ID of the window you selected if you don't manually drag a selection, or a delimited list of window IDs for each window that falls within the selection, maybe both depending on context or a command flag
+- Aspect ratio selection mode
+- Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
