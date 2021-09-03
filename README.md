@@ -30,3 +30,4 @@ Example usage video: https://streamable.com/53n3fo
 - Allow printing the window ID from regular selection, either the window ID of the window you selected if you don't manually drag a selection, or a delimited list of window IDs for each window that falls within the selection, maybe both depending on context or a command flag
 - Aspect ratio selection mode
 - Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
+- Fixed size selection mode, so you can do things like move a window with boox without resizing it
