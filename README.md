@@ -32,3 +32,4 @@ Example usage video: https://streamable.com/53n3fo
 - Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
 - Fixed size selection mode, so you can do things like move a window with boox without resizing it
 - Keyboard control for selection, arrow keys/hjkl for moving the pointer, enter and/or space to start and finish the selection, alt to move by single pixel distances rather than jumping larger distances, shift and control work as they already do
+- Restrict region in which you can make selections, useful if you want to select only within a certain window for example (maybe a mode that restricts selection to whatever window you start it in)
