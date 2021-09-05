@@ -10,7 +10,7 @@ mode_t selection_mode = MODE_SELECT;
 xcb_window_t selection_window;
 xcb_window_t constraining_window;
 rect_t selection;
-point_selection_t point_selection;
+xcb_window_t selected_window;
 int border_size;
 int border_color;
 

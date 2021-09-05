@@ -15,40 +15,24 @@ char *format_output(char *src)
             char nc = src[1];
             switch (nc) {
                 case 'w': {
-                    if (selection_mode == MODE_SELECT) {
-                        offset += sprintf(buffer+offset, "%d", selection.w);
-                        src++;
-                    } else {
-                        offset += sprintf(buffer+offset, "%d", point_selection.window);
-                        src++;
-                    }
+                    offset += sprintf(buffer+offset, "%d", selection.w);
+                    src++;
                 } break;
                 case 'h': {
-                    if (selection_mode == MODE_SELECT) {
-                        offset += sprintf(buffer+offset, "%d", selection.h);
-                        src++;
-                    } else {
-                        strncpy(buffer+offset, src, 1);
-                        offset++;
-                    }
+                    offset += sprintf(buffer+offset, "%d", selection.h);
+                    src++;
                 } break;
                 case 'x': {
-                    if (selection_mode == MODE_SELECT) {
-                        offset += sprintf(buffer+offset, "%d", selection.x);
-                        src++;
-                    } else {
-                        offset += sprintf(buffer+offset, "%d", point_selection.point.x);
-                        src++;
-                    }
+                    offset += sprintf(buffer+offset, "%d", selection.x);
+                    src++;
                 } break;
                 case 'y': {
-                    if (selection_mode == MODE_SELECT) {
-                        offset += sprintf(buffer+offset, "%d", selection.y);
-                        src++;
-                    } else {
-                        offset += sprintf(buffer+offset, "%d", point_selection.point.y);
-                        src++;
-                    }
+                    offset += sprintf(buffer+offset, "%d", selection.y);
+                    src++;
+                } break;
+                case 'i': {
+                    offset += sprintf(buffer+offset, "%d", selected_window);
+                    src++;
                 } break;
                 default: {
                     strncpy(buffer+offset, src, 1);

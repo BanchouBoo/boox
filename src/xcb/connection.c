@@ -55,12 +55,7 @@ int xcb_initialize(int wait_until_cursor_grabbable, char *constraining_window_ta
         pointer_reply = xcb_grab_pointer_reply(xcb_connection,
             grab_pointer_cookie, NULL);
 
-        if (wait_until_cursor_grabbable) {
-            if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_SUCCESS)
-                break;
-        } else break;
-
-    } while (wait_until_cursor_grabbable);
+    } while (wait_until_cursor_grabbable && pointer_reply->status != XCB_GRAB_STATUS_SUCCESS);
 
     if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_ALREADY_GRABBED)
         return 0;

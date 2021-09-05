@@ -41,12 +41,6 @@ static void handle_events(void) {
                     last_mouse_pos.x = e->root_x;
                     last_mouse_pos.y = e->root_y;
                     selecting = 1;
-                } else {
-                    point_selection.point.x = e->root_x;
-                    point_selection.point.y = e->root_y;
-                    point_selection.window = e->child ? e->child : xcb_screen->root;
-                    running = 0;
-                    xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
                 }
             } else if (e->detail == 3) {
                 exit(EXIT_FAILURE);
@@ -128,23 +122,34 @@ static void handle_events(void) {
 
         case XCB_BUTTON_RELEASE: {
             xcb_button_release_event_t *e = ( xcb_button_release_event_t *)ev;
-            if (e->detail != 1 || !selecting)
+            if (e->detail != 1)
                 break;
 
-            if (selection.w == 0 && selection.h == 0) {
-                geom = xcb_get_geometry_reply(xcb_connection,
-                    xcb_get_geometry(xcb_connection, e->child ? e->child : xcb_screen->root), NULL);
+            if (selection_mode == MODE_POINT) {
+                selection.x = e->root_x;
+                selection.y = e->root_y;
+                selected_window = e->child ? e->child : xcb_screen->root;
 
-                selection = (rect_t) {
-                    .x = geom->x + geom->border_width,
-                    .y = geom->y + geom->border_width,
-                    .w = geom->width,
-                    .h = geom->height
-                };
+                xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
+                running = 0;
+            } else if (selecting) {
+                if (selection.w == 0 && selection.h == 0) {
+                    geom = xcb_get_geometry_reply(xcb_connection,
+                        xcb_get_geometry(xcb_connection, e->child ? e->child : xcb_screen->root), NULL);
+                    selected_window = e->child ? e->child : xcb_screen->root;
+
+                    selection = (rect_t) {
+                        .x = geom->x + geom->border_width,
+                        .y = geom->y + geom->border_width,
+                        .w = geom->width,
+                        .h = geom->height
+                    };
+                }
+
+                xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
+                running = 0;
             }
 
-            xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
-            running = 0;
         } break;
     }
     free(ev);
@@ -157,7 +162,8 @@ void print_help(int exit_code) {
 
     fprintf(stderr, "  -w          if the pointer is already captured, wait for it to be uncaptured instead of failing\n");
     fprintf(stderr, "  -p          select a point instead of region\n");
-    fprintf(stderr, "  -f FORMAT   set output format              default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
+    fprintf(stderr, "  -f FORMAT   set output format              available values: %%x, %%y, %%w, and %%h for selection values, %%i for window ID (0 if not applicable)\n");
+    fprintf(stderr, "                                             default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
     fprintf(stderr, "                                             default point format: '%s'\n", DEFAULT_POINT_OUTPUT_FORMAT);
     fprintf(stderr, "  -r WINDOW   restrict selection to window   valid values: root, current, or a window ID\n");
     fprintf(stderr, "                                             default: '%s'\n", "root");

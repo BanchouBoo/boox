@@ -13,9 +13,9 @@ Modifier keys change how selection works in various ways:
 If you run with `-p` you will select a point/window.
 
 ## flags/configuration
-Region selection output format can be configured with the `-f` flag or with the `BOOX_SELECTION_FORMAT` environment variable, to format output, use a string with `%x`, `%y`, `%w`, and `%h` to fill in the selection values. For example, to get the same output as crud you'd run `boox -f 'W=%w\nH=%h\nX=%x\nY=%y\nG=%wx%h+%x+%y'`. The default output is `%wx%h+%x+%y`.
+Region selection output format can be configured with the `-f` flag or with the `BOOX_SELECTION_FORMAT` environment variable, to format output, use a string with `%x`, `%y`, `%w`, and `%h` to fill in the selection region values, you can also use `%i` for the window ID if the you selecteda whole window by clicking it rather than dragging a selection, otherwise `%i` will just output 0. For example, to get the same output as crud you'd run `boox -f 'W=%w\nH=%h\nX=%x\nY=%y\nG=%wx%h+%x+%y'`. The default output is `%wx%h+%x+%y`.
 
-For point selection format you can still use `-f` or you can use the `BOOX_POINT_FORMAT` environment variable. For the format string, you can use `%x`, `%y`, and `%w` where `%w` is the ID of the clicked window.
+For point selection format you can still use `-f` or you can use the `BOOX_POINT_FORMAT` environment variable. All the formatting options are the same, though `%w` and `%h` will always be 0. The default output is `%x %y`.
 
 Border size can be configured with the `-b` flag or the `BOOX_BORDER_SIZE` environment variable, e.g. `boox -b 4`
 
@@ -23,7 +23,7 @@ Border color can be configured with the `-c` flag or the `BOOX_BORDER_COLOR` env
 
 Normally when the mouse pointer is already captured, boox will silently exit with an error, but you can use the `-w` flag to make it wait until it can capture the pointer
 
-You can restrict the selection to a specific window with the `-r` flag. Valid values are `root` (default), `current` (the current active window as determined by `_NET_ACTIVE_WINDOW`), and a specific window ID. A pattern you may find useful is `boox -r $(boox -p -f '%w')` to first select what window you want the selection to be restricted to then start the actual selection
+You can restrict the selection to a specific window with the `-r` flag. Valid values are `root` (default), `current` (the current active window as determined by `_NET_ACTIVE_WINDOW`), and a specific window ID. A pattern you may find useful is `boox -r $(boox -p -f '%i')` to first select what window you want the selection to be restricted to then start the actual selection
 
 Some flags can also have their default values changed in `src/config.h`
 
@@ -32,7 +32,6 @@ General usage and basic config flags: https://streamable.com/53n3fo
 Restricting selection to a window: https://streamable.com/2quhva
 
 ## todo (maybe)
-- Restructure the code to better support adding different modes of selection
 - Allow printing the window ID from regular selection, either the window ID of the window you selected if you don't manually drag a selection, or a delimited list of window IDs for each window that falls within the selection, maybe both depending on context or a command flag
 - Aspect ratio selection mode
 - Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
