@@ -20,8 +20,8 @@ int running = 1;
 static void handle_events(void) {
     xcb_generic_event_t *ev;
     xcb_get_geometry_reply_t *geom;
-    xcb_window_t hovered_win = 0;
 
+    static xcb_window_t hovered_win = 0;
     static int selecting = 0;
     static point_t last_mouse_pos = { .x = 0, .y = 0 };
     static alt_state_t alt_state = ALT_STATE_NONE;
@@ -128,7 +128,8 @@ static void handle_events(void) {
             if (selection_mode == MODE_POINT) {
                 selection.x = e->root_x;
                 selection.y = e->root_y;
-                selected_window = e->child ? e->child : xcb_screen->root;
+                selected_window = get_child_window(e->child);
+                selected_window = selected_window ? selected_window : e->child;
 
                 xcb_ungrab_pointer(xcb_connection, XCB_CURRENT_TIME);
                 running = 0;
@@ -136,7 +137,8 @@ static void handle_events(void) {
                 if (selection.w == 0 && selection.h == 0) {
                     geom = xcb_get_geometry_reply(xcb_connection,
                         xcb_get_geometry(xcb_connection, e->child ? e->child : xcb_screen->root), NULL);
-                    selected_window = e->child ? e->child : xcb_screen->root;
+                    selected_window = get_child_window(e->child);
+                    selected_window = selected_window ? selected_window : e->child;
 
                     selection = (rect_t) {
                         .x = geom->x + geom->border_width,
@@ -162,7 +164,7 @@ void print_help(int exit_code) {
 
     fprintf(stderr, "  -w          if the pointer is already captured, wait for it to be uncaptured instead of failing\n");
     fprintf(stderr, "  -p          select a point instead of region\n");
-    fprintf(stderr, "  -f FORMAT   set output format              available values: %%x, %%y, %%w, and %%h for selection values, %%i for window ID (0 if not applicable)\n");
+    fprintf(stderr, "  -f FORMAT   set output format              available values: %%x, %%y, %%w, and %%h for selection values, %%i for window ID (0 if not applicable or root)\n");
     fprintf(stderr, "                                             default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
     fprintf(stderr, "                                             default point format: '%s'\n", DEFAULT_POINT_OUTPUT_FORMAT);
     fprintf(stderr, "  -r WINDOW   restrict selection to window   valid values: root, current, or a window ID\n");

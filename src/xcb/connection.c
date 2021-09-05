@@ -33,13 +33,13 @@ int xcb_initialize(int wait_until_cursor_grabbable, char *constraining_window_ta
     } else if (strcmp(constraining_window_tag, "current") == 0) {
         xcb_intern_atom_cookie_t focused_atom_cookie = xcb_intern_atom(xcb_connection, 1,
             18, "_NET_ACTIVE_WINDOW");
-        xcb_intern_atom_reply_t* focused_atom_reply = xcb_intern_atom_reply(xcb_connection, focused_atom_cookie, NULL);
-        if (focused_atom_reply) {
+        xcb_intern_atom_reply_t *focused_atom = xcb_intern_atom_reply(xcb_connection, focused_atom_cookie, NULL);
+        if (focused_atom) {
             xcb_get_property_cookie_t property_cookie = xcb_get_property(xcb_connection, 0,
-                xcb_screen->root, focused_atom_reply->atom, XCB_ATOM_WINDOW, 0, 1);
-            xcb_get_property_reply_t *property_reply = xcb_get_property_reply(xcb_connection, property_cookie, NULL);
-            if (property_reply)
-                constraining_window = *(xcb_window_t*)xcb_get_property_value(property_reply);
+                xcb_screen->root, focused_atom->atom, XCB_ATOM_WINDOW, 0, 1);
+            xcb_get_property_reply_t *property = xcb_get_property_reply(xcb_connection, property_cookie, NULL);
+            if (property)
+                constraining_window = *(xcb_window_t*)xcb_get_property_value(property);
         }
     } else {
         constraining_window = (xcb_window_t)strtol(constraining_window_tag, NULL, 10);

@@ -111,3 +111,41 @@ rect_t fix_rect(rect_t dimensions)
 
     return dimensions;
 }
+
+xcb_window_t get_child_window(xcb_window_t wid) {
+    xcb_query_tree_cookie_t tree_cookie = xcb_query_tree(xcb_connection, wid);
+    xcb_query_tree_reply_t *tree = xcb_query_tree_reply(xcb_connection, tree_cookie, NULL);
+    if (!tree)
+        return XCB_WINDOW_NONE;
+
+    unsigned int nchildren = tree->children_len;
+    if (!nchildren)
+        return XCB_WINDOW_NONE;
+
+    xcb_window_t *children = xcb_query_tree_children(tree);
+
+    xcb_intern_atom_cookie_t wm_state_cookie = xcb_intern_atom(xcb_connection, 0, 8, "WM_STATE");
+    xcb_intern_atom_reply_t *wm_state = xcb_intern_atom_reply(xcb_connection, wm_state_cookie, NULL);
+
+    int i;
+    for (i = nchildren - 1; i >= 0; i--) {
+        xcb_get_property_cookie_t property_cookie = xcb_get_property(xcb_connection, 0,
+            children[i], wm_state->atom, XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
+        xcb_get_property_reply_t *property = xcb_get_property_reply(xcb_connection, property_cookie, NULL);
+
+        if (property && property->type == XCB_NONE)
+            continue;
+
+        return children[i];
+    }
+
+    for (i = nchildren - 1; i >= 0; i--) {
+        if (children[i] != XCB_WINDOW_NONE) {
+            wid = get_child_window(children[i]);
+            if (wid != XCB_WINDOW_NONE)
+                return wid;
+        }
+    }
+
+    return wid;
+}
