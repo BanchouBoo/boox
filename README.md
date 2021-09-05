@@ -37,3 +37,5 @@ Restricting selection to a window: https://streamable.com/2quhva
 - Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
 - Start a selection with the initial values being that of a window
 - Keyboard control for selection, arrow keys/hjkl for moving the pointer, enter and/or space to start and finish the selection, alt to move by single pixel distances rather than jumping larger distances, shift and control work as they already do
+- Abstract platform backend to make it easier to implement other backends in the future
+- Wayland backend
