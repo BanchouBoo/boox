@@ -13,7 +13,7 @@ Modifier keys change how selection works in various ways:
 If you run with `-p` you will select a point/window.
 
 ## flags/configuration
-Region selection output format can be configured with the `-f` flag or with the `BOOX_SELECTION_FORMAT` environment variable, to format output, use a string with `%x`, `%y`, `%w`, and `%h` to fill in the selection region values, you can also use `%i` for the window ID if the you selecteda whole window by clicking it rather than dragging a selection, otherwise `%i` will just output 0. For example, to get the same output as crud you'd run `boox -f 'W=%w\nH=%h\nX=%x\nY=%y\nG=%wx%h+%x+%y'`. The default output is `%wx%h+%x+%y`.
+Region selection output format can be configured with the `-f` flag or with the `BOOX_SELECTION_FORMAT` environment variable, to format output, use a string with `%x`, `%y`, `%w`, and `%h` to fill in the selection region values, you can also use `%i` for the window ID if the you selected a whole window by clicking it rather than dragging a selection, otherwise `%i` will just output 0. For example, to get the same output as crud you'd run `boox -f 'W=%w\nH=%h\nX=%x\nY=%y\nG=%wx%h+%x+%y'`. The default output is `%wx%h+%x+%y`.
 
 For point selection format you can still use `-f` or you can use the `BOOX_POINT_FORMAT` environment variable. All the formatting options are the same, though `%w` and `%h` will always be 0. The default output is `%x %y`.
 
