@@ -36,10 +36,28 @@ static void handle_events(void) {
             xcb_button_press_event_t *e = ( xcb_button_press_event_t *)ev;
             if (e->detail == 1) {
                 if (selection_mode == MODE_SELECT) {
-                    selection.x = e->root_x;
-                    selection.y = e->root_y;
-                    last_mouse_pos.x = e->root_x;
-                    last_mouse_pos.y = e->root_y;
+                    if (e->child &&
+                        (e->state & XCB_MOD_MASK_CONTROL ||
+                        e->state & XCB_MOD_MASK_SHIFT ||
+                        alt_state == ALT_STATE_WAITING)) {
+
+                        geom = xcb_get_geometry_reply(xcb_connection, xcb_get_geometry(xcb_connection, e->child), NULL);
+                        selection = (rect_t) {
+                            .x = geom->x + geom->border_width,
+                            .y = geom->y + geom->border_width,
+                            .w = geom->width,
+                            .h = geom->height
+                        };
+                        last_mouse_pos.x = selection.x + selection.w;
+                        last_mouse_pos.y = selection.y + selection.h;
+                        xcb_warp_pointer(xcb_connection, XCB_NONE, xcb_screen->root, 0, 0, 0, 0, selection.x + selection.w, selection.y + selection.h);
+                        flush();
+                    } else {
+                        selection.x = e->root_x;
+                        selection.y = e->root_y;
+                        last_mouse_pos.x = e->root_x;
+                        last_mouse_pos.y = e->root_y;
+                    }
                     selecting = 1;
                 }
             } else if (e->detail == 3) {
