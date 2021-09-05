@@ -29,6 +29,7 @@ Some flags can also have their default values changed in `src/config.h`
 
 ## usage videos
 General usage and basic config flags: https://streamable.com/53n3fo
+
 Restricting selection to a window: https://streamable.com/2quhva
 
 ## todo (maybe)
