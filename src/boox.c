@@ -128,7 +128,7 @@ static void handle_events(void) {
 
         case XCB_BUTTON_RELEASE: {
             xcb_button_release_event_t *e = ( xcb_button_release_event_t *)ev;
-            if (e->detail != 1)
+            if (e->detail != 1 || !selecting)
                 break;
 
             if (selection.w == 0 && selection.h == 0) {
@@ -151,15 +151,18 @@ static void handle_events(void) {
 }
 
 void print_help(int exit_code) {
-    fprintf(stderr, "boox: [-f FORMAT] [-b SIZE] [-c COLOR]\n");
+    fprintf(stderr, "boox: [OPTIONS]\n");
 
     fprintf(stderr, "  -h          print this help and exit\n\n");
 
+    fprintf(stderr, "  -w          if the pointer is already captured, wait for it to be uncaptured instead of failing\n");
     fprintf(stderr, "  -p          select a point instead of region\n");
-    fprintf(stderr, "  -f FORMAT   set output format                 default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
-    fprintf(stderr, "                                                default point format: '%s'\n", DEFAULT_POINT_OUTPUT_FORMAT);
-    fprintf(stderr, "  -b SIZE     set selection border size         default: %d\n", DEFAULT_BORDER_SIZE);
-    fprintf(stderr, "  -c COLOR    set selection border color        default: %x\n", DEFAULT_BORDER_COLOR);
+    fprintf(stderr, "  -f FORMAT   set output format              default selection format: '%s'\n", DEFAULT_SELECTION_OUTPUT_FORMAT);
+    fprintf(stderr, "                                             default point format: '%s'\n", DEFAULT_POINT_OUTPUT_FORMAT);
+    fprintf(stderr, "  -r WINDOW   restrict selection to window   valid values: root, current, or a window ID\n");
+    fprintf(stderr, "                                             default: '%s'\n", "root");
+    fprintf(stderr, "  -b SIZE     set selection border size      default: %d\n", DEFAULT_BORDER_SIZE);
+    fprintf(stderr, "  -c COLOR    set selection border color     default: %x\n", DEFAULT_BORDER_COLOR);
 
     exit(exit_code);
 }
@@ -181,13 +184,17 @@ int main(int argc, char **argv) {
     } else
         border_color = DEFAULT_BORDER_COLOR;
 
-
+    int wait_until_cursor_grabbable = 0;
+    char *constraining_window_tag = "root";
 
     char opt = 0;
-    while ((opt = getopt(argc, argv, "hpf:b:c:")) != -1) {
+    while ((opt = getopt(argc, argv, "hwpf:b:c:r:")) != -1) {
         switch (opt) {
             case 'h': {
                 print_help(EXIT_SUCCESS);
+            } break;
+            case 'w': {
+                wait_until_cursor_grabbable = 1;
             } break;
             case 'p': {
                 selection_mode = MODE_POINT;
@@ -201,6 +208,9 @@ int main(int argc, char **argv) {
             case 'c': {
                 border_color = strtol(optarg, NULL, 16);
             } break;
+            case 'r': {
+                constraining_window_tag = optarg;
+            } break;
             case '?': print_help(EXIT_FAILURE);
         }
     }
@@ -212,7 +222,7 @@ int main(int argc, char **argv) {
             format = point_format_env ? point_format_env : DEFAULT_POINT_OUTPUT_FORMAT;
     }
 
-    if (!xcb_initialize())
+    if (!xcb_initialize(wait_until_cursor_grabbable, constraining_window_tag))
         return EXIT_FAILURE;
 
     while (running) {

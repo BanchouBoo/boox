@@ -27,6 +27,7 @@ typedef enum {
 
 extern selection_mode_t selection_mode;
 extern xcb_window_t selection_window;
+extern xcb_window_t constraining_window;
 extern rect_t selection;
 extern point_selection_t point_selection;
 extern int border_size;

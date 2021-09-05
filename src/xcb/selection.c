@@ -8,6 +8,7 @@
 
 mode_t selection_mode = MODE_SELECT;
 xcb_window_t selection_window;
+xcb_window_t constraining_window;
 rect_t selection;
 point_selection_t point_selection;
 int border_size;
@@ -29,22 +30,26 @@ void selection_window_initialize(void)
 
 
     xcb_rectangle_t rects[4];
-    set_rects_from_selection(rects, selection);
-    xcb_rectangle_t rect;
+    set_rects_from_selection(rects, (rect_t) {
+        .x = -border_size,
+        .y = -border_size,
+        .w = 0,
+        .h = 0
+    });
+    // xcb_rectangle_t rect;
 
     xcb_shape_rectangles(xcb_connection, XCB_SHAPE_SO_SET,
         XCB_SHAPE_SK_BOUNDING, 0, selection_window, 0, 0, 4, rects);
 
-    xcb_shape_rectangles(xcb_connection, XCB_SHAPE_SO_SET,
-        XCB_SHAPE_SK_INPUT, 0, selection_window, 0, 0, 1, &rect);
+    // TODO: I don't remember what this was for but everything works if I remove it?
+    // xcb_shape_rectangles(xcb_connection, XCB_SHAPE_SO_SET,
+    //     XCB_SHAPE_SK_INPUT, 0, selection_window, 0, 0, 1, &rect);
 
     xcb_map_window(xcb_connection, selection_window);
 }
 
 void set_rects_from_selection(xcb_rectangle_t *rects, rect_t dimensions)
 {
-    dimensions = fix_rect(dimensions);
-
     rects[0].x = dimensions.x - border_size;
     rects[0].y = dimensions.y - border_size;
     rects[0].width = border_size;
@@ -69,7 +74,7 @@ void set_rects_from_selection(xcb_rectangle_t *rects, rect_t dimensions)
 void update_selection_window(rect_t dimensions)
 {
     xcb_rectangle_t rects[4];
-    set_rects_from_selection(rects, dimensions);
+    set_rects_from_selection(rects, fix_rect(dimensions));
     xcb_shape_rectangles(xcb_connection, XCB_SHAPE_SO_SET,
         XCB_SHAPE_SK_BOUNDING, 0, selection_window, 0, 0, 4, rects);
     flush();
@@ -77,35 +82,32 @@ void update_selection_window(rect_t dimensions)
 
 rect_t fix_rect(rect_t dimensions)
 {
-    if (dimensions.x < 0) {
-        dimensions.w += dimensions.x;
-        dimensions.x = 0;
-    }
+    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(xcb_connection,
+        xcb_get_geometry(xcb_connection, constraining_window), NULL);
 
-    if (dimensions.y < 0) {
-        dimensions.h += dimensions.y;
-        dimensions.y = 0;
-    }
+    #define min(a,b) (((a)<(b))?(a):(b))
+    #define max(a,b) (((a)>(b))?(a):(b))
+    #define clamp(a, low, high) min(max(a, low), high)
 
-    if (dimensions.w < 0) {
-        dimensions.x = dimensions.x + dimensions.w;
-        dimensions.w = abs(dimensions.w);
-    }
+    int window_left_edge = geom->x;
+    int window_right_edge = window_left_edge + geom->width;
+    int window_top_edge = geom->y;
+    int window_bottom_edge = window_top_edge + geom->height;
 
-    if (dimensions.h < 0) {
-        dimensions.y = dimensions.y + dimensions.h;
-        dimensions.h = abs(dimensions.h);
-    }
+    int dimensions_left_edge = min(dimensions.x, dimensions.x + dimensions.w);
+    int dimensions_right_edge = max(dimensions.x, dimensions.x + dimensions.w);
+    int dimensions_top_edge = min(dimensions.y, dimensions.y + dimensions.h);
+    int dimensions_bottom_edge = max(dimensions.y, dimensions.y + dimensions.h);
 
-    xcb_get_geometry_reply_t *geom = xcb_get_geometry_reply(xcb_connection, xcb_get_geometry(xcb_connection, xcb_screen->root), NULL);
+    int left_edge = clamp(dimensions_left_edge, window_left_edge, window_right_edge);
+    int right_edge = clamp(dimensions_right_edge, window_left_edge, window_right_edge);
+    int top_edge = clamp(dimensions_top_edge, window_top_edge, window_bottom_edge);
+    int bottom_edge = clamp(dimensions_bottom_edge, window_top_edge, window_bottom_edge);
 
-    if (dimensions.x + dimensions.w > geom->width) {
-        dimensions.w = geom->width - dimensions.x;
-    }
-
-    if (dimensions.y + dimensions.h > geom->height) {
-        dimensions.h = geom->height - dimensions.y;
-    }
+    dimensions.x = left_edge;
+    dimensions.w = right_edge - left_edge;
+    dimensions.y = top_edge;
+    dimensions.h = bottom_edge - top_edge;
 
     return dimensions;
 }

@@ -1,5 +1,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_cursor.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "connection.h"
 #include "selection.h"
@@ -7,7 +9,7 @@
 xcb_connection_t *xcb_connection;
 xcb_screen_t *xcb_screen;
 
-int xcb_initialize(void)
+int xcb_initialize(int wait_until_cursor_grabbable, char *constraining_window_tag)
 {
     int values[4];
     int mask;
@@ -23,21 +25,50 @@ int xcb_initialize(void)
         cursor = xcb_cursor_load_cursor(ctx, "crosshair");
     }
 
-    xcb_grab_pointer_cookie_t grab_pointer_cookie = xcb_grab_pointer(xcb_connection, 0,
-        xcb_screen->root, XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-        XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
-        xcb_screen->root, cursor, XCB_CURRENT_TIME);
+    xcb_grab_pointer_cookie_t grab_pointer_cookie;
+    xcb_grab_pointer_reply_t *pointer_reply;
+
+    if (strcmp(constraining_window_tag, "root") == 0) {
+        constraining_window = xcb_screen->root;
+    } else if (strcmp(constraining_window_tag, "current") == 0) {
+        xcb_intern_atom_cookie_t focused_atom_cookie = xcb_intern_atom(xcb_connection, 1,
+            18, "_NET_ACTIVE_WINDOW");
+        xcb_intern_atom_reply_t* focused_atom_reply = xcb_intern_atom_reply(xcb_connection, focused_atom_cookie, NULL);
+        if (focused_atom_reply) {
+            xcb_get_property_cookie_t property_cookie = xcb_get_property(xcb_connection, 0,
+                xcb_screen->root, focused_atom_reply->atom, XCB_ATOM_WINDOW, 0, 1);
+            xcb_get_property_reply_t *property_reply = xcb_get_property_reply(xcb_connection, property_cookie, NULL);
+            if (property_reply)
+                constraining_window = *(xcb_window_t*)xcb_get_property_value(property_reply);
+        }
+    } else {
+        constraining_window = (xcb_window_t)strtol(constraining_window_tag, NULL, 10);
+    }
+    constraining_window = constraining_window ? constraining_window : xcb_screen->root;
+
+    do {
+        grab_pointer_cookie = xcb_grab_pointer(xcb_connection, 0,
+            xcb_screen->root, XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+            XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+            xcb_screen->root, cursor, XCB_CURRENT_TIME);
+
+        pointer_reply = xcb_grab_pointer_reply(xcb_connection,
+            grab_pointer_cookie, NULL);
+
+        if (wait_until_cursor_grabbable) {
+            if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_SUCCESS)
+                break;
+        } else break;
+
+    } while (wait_until_cursor_grabbable);
+
+    if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_ALREADY_GRABBED)
+        return 0;
 
     // grab alt key (64)
     xcb_grab_key(xcb_connection, 0, xcb_screen->root, XCB_MOD_MASK_ANY, 64, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
 
     xcb_free_cursor(xcb_connection, cursor);
-
-    xcb_grab_pointer_reply_t *pointer_reply = xcb_grab_pointer_reply(xcb_connection,
-        grab_pointer_cookie, NULL);
-
-    if (pointer_reply && pointer_reply->status == XCB_GRAB_STATUS_ALREADY_GRABBED)
-        return 0;
 
     values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
     mask = XCB_CW_EVENT_MASK;

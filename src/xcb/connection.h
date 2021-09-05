@@ -6,7 +6,7 @@
 extern xcb_connection_t *xcb_connection;
 extern xcb_screen_t *xcb_screen;
 
-int xcb_initialize(void);
+int xcb_initialize(int wait_until_cursor_grabbable, char *constraining_window_tag);
 void xcb_finalize(void);
 void flush(void);
 

@@ -12,7 +12,7 @@ Modifier keys change how selection works in various ways:
 
 If you run with `-p` you will select a point/window.
 
-## configuration
+## flags/configuration
 Region selection output format can be configured with the `-f` flag or with the `BOOX_SELECTION_FORMAT` environment variable, to format output, use a string with `%x`, `%y`, `%w`, and `%h` to fill in the selection values. For example, to get the same output as crud you'd run `boox -f 'W=%w\nH=%h\nX=%x\nY=%y\nG=%wx%h+%x+%y'`. The default output is `%wx%h+%x+%y`.
 
 For point selection format you can still use `-f` or you can use the `BOOX_POINT_FORMAT` environment variable. For the format string, you can use `%x`, `%y`, and `%w` where `%w` is the ID of the clicked window.
@@ -21,9 +21,15 @@ Border size can be configured with the `-b` flag or the `BOOX_BORDER_SIZE` envir
 
 Border color can be configured with the `-c` flag or the `BOOX_BORDER_COLOR` environment variable, the value should be a hex color value **without** the `#`, e.g. `boox -c ff0000`
 
-All options can also have their default values changed in `src/config.h`
+Normally when the mouse pointer is already captured, boox will silently exit with an error, but you can use the `-w` flag to make it wait until it can capture the pointer
 
-Example usage video: https://streamable.com/53n3fo
+You can restrict the selection to a specific window with the `-r` flag. Valid values are `root` (default), `current` (the current active window as determined by `_NET_ACTIVE_WINDOW`), and a specific window ID. A pattern you may find useful is `boox -r $(boox -p -f '%w')` to first select what window you want the selection to be restricted to then start the actual selection
+
+Some flags can also have their default values changed in `src/config.h`
+
+## usage videos
+General usage and basic config flags: https://streamable.com/53n3fo
+Restricting selection to a window: https://streamable.com/2quhva
 
 ## todo (maybe)
 - Restructure the code to better support adding different modes of selection
@@ -32,4 +38,3 @@ Example usage video: https://streamable.com/53n3fo
 - Grid selection mode, split the screen into a grid of rows and columns and snap the selection to grid cells, with optional padding between cells and at the edges of the screen
 - Fixed size selection mode, so you can do things like move a window with boox without resizing it
 - Keyboard control for selection, arrow keys/hjkl for moving the pointer, enter and/or space to start and finish the selection, alt to move by single pixel distances rather than jumping larger distances, shift and control work as they already do
-- Restrict region in which you can make selections, useful if you want to select only within a certain window for example (maybe a mode that restricts selection to whatever window you start it in)
