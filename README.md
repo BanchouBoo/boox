@@ -1,5 +1,7 @@
 # boox
 
+demo: https://files.catbox.moe/e4tc21.mp4
+
 ## details
 `boox` is a screen region and point/window selection tool with formattable output similar to [crud](https://github.com/ix/crud), [hacksaw](https://github.com/neXromancers/hacksaw), or [slop](https://github.com/naelstrof/slop). Like these other tools, `boox` draws the selection using a window.
 
@@ -26,11 +28,6 @@ Normally when the mouse pointer is already captured, boox will silently exit wit
 You can restrict the selection to a specific window with the `-r` flag. Valid values are `root` (default), `current` (the current active window as determined by `_NET_ACTIVE_WINDOW`), and a specific window ID. A pattern you may find useful is `boox -r $(boox -p -f '%i')` to first select what window you want the selection to be restricted to then start the actual selection
 
 Some flags can also have their default values changed in `src/config.h`
-
-## usage videos
-General usage and basic config flags: https://streamable.com/53n3fo
-
-Restricting selection to a window: https://streamable.com/2quhva
 
 ## todo (maybe)
 - Aspect ratio selection mode
