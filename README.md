@@ -1,6 +1,6 @@
 # boox
 
-https://user-images.githubusercontent.com/32691832/156974396-c0ae7ba5-d6bd-4d18-b450-ce3b30d61c4f.mp4
+This project has been superseded by [bento](https://github.com/BanchouBoo/bento)
 
 ## details
 `boox` is a screen region and point/window selection tool with formattable output similar to [crud](https://github.com/ix/crud), [hacksaw](https://github.com/neXromancers/hacksaw), or [slop](https://github.com/naelstrof/slop). Like these other tools, `boox` draws the selection using a window.
